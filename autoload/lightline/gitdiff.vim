@@ -16,13 +16,16 @@ function! lightline#gitdiff#generate() abort
     return ''
   endif
 
-  call system('git rev-parse --is-inside-work-tree --prefix ' . expand('%:p:h'))
+  " to be independent from current :pwd
+  let l:cmd_prefix = 'cd ' . expand('%:p:h:S') . ' && '
+
+  call system(l:cmd_prefix . 'git rev-parse --is-inside-work-tree --prefix ' . expand('%:h:S'))
   if v:shell_error
     " b/c there simply is nothing to diff to
     return ''
   endif
 
-  let l:stats = split(system('git diff --numstat -- ' . expand('%')))
+  let l:stats = split(system(l:cmd_prefix . 'git diff --numstat -- ' . expand('%:t:S')))
 
   if len(l:stats) < 2
     " b/c there are no changes made, the file is untracked or some error
