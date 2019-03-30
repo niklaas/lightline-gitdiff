@@ -16,7 +16,7 @@ function! lightline#gitdiff#generate() abort
     return ''
   endif
 
-  call system('git rev-parse --is-inside-work-tree')
+  call system('git rev-parse --is-inside-work-tree --prefix ' . expand('%:p:h'))
   if v:shell_error
     " b/c there simply is nothing to diff to
     return ''
