@@ -27,14 +27,9 @@ function! lightline#gitdiff#generate() abort
 
   let l:stats = split(system(l:cmd_prefix . 'git diff --numstat -- ' . expand('%:t:S')))
 
-  if len(l:stats) < 2
+  if len(l:stats) < 2 || join(l:stats[:1], '') !~# '^\d\+$'
     " b/c there are no changes made, the file is untracked or some error
     " occured
-    return ''
-  endif
-
-  if join(l:stats[:1], '') !~# '^\d\+$'
-    " b/c some error must have occured
     return ''
   endif
 
