@@ -16,6 +16,12 @@ This says that there are uncommitted changes. In the current buffer 4 lines
 were added and 6 lines were deleted. If there are no uncommitted changes,
 nothing is shown to reduce distraction.
 
+A similar example is shown in the following screenshot. The first box indicates
+where two files were added, the second box where a line was removed and the
+third box shows the plugin in action: 2 lines added and 1 line removed.
+
+![screenshot](https://raw.githubusercontent.com/wiki/niklaas/lightline-gitdiff/images/screenshot.png)
+
 # Installation
 
 Use your favourite plugin manager and add `lightline#gitdiff#get` to your
