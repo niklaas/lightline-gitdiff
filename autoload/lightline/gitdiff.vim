@@ -1,3 +1,7 @@
+let s:indicator_added = get(g:, 'lightline#gitdiff#indicator_added', 'A: ')
+let s:indicator_deleted = get(g:, 'lightline#gitdiff#indicator_deleted', 'D: ')
+let s:separator = get(g:, 'lightline#gitdiff#separator', ' ')
+
 function! lightline#gitdiff#get() abort
   return g:lightline#gitdiff#cache
 endfunction
@@ -25,8 +29,8 @@ function! lightline#gitdiff#generate() abort
     return ''
   endif
 
-  let l:lines_changed = l:stats[0] ==# '0' ? '' : 'C: ' . l:stats[0]
-  let l:lines_removed = l:stats[1] ==# '0' ? '' : 'R: ' . l:stats[1]
+  let l:lines_added = l:stats[0] ==# '0' ? '' : s:indicator_added . l:stats[0]
+  let l:lines_deleted = l:stats[1] ==# '0' ? '' : s:indicator_deleted . l:stats[1]
 
-  return join([l:lines_changed, l:lines_removed], ' ')
+  return join([l:lines_added, l:lines_deleted], s:separator)
 endfunction
