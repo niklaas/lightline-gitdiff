@@ -22,3 +22,8 @@ In the background, the plugin occasionally calls `git --numstat` for the
 current buffer. When developing the plugin I figured that calling the command
 every time lightline updates i.e., on every keystroke, is very expensive. So I
 decided to cache the result and update only when really needed.
+
+# Bugs etc.
+
+Probably this code has some sharp edges. Feel free to report bugs, suggestions
+and pull requests. I'll try to fix them as soon as possible.
