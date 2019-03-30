@@ -21,7 +21,7 @@ nothing is shown to reduce distraction.
 You can configure the indicators and the separator between added and deleted
 lines of code. The following are the defaults:
 
-```{vim}
+```vim
 let g:lightline#gitdiff#indicator_added = 'A: '
 let g:lightline#gitdiff#indicator_deleted = 'D: '
 let g:lightline#gitdiff#separator = ' '
