@@ -1,12 +1,12 @@
 # lightline-gitdiff
 
-I had been using airblade/vim-gitgutter for a long time, however, I felt
-distracted by the indicators in the sign column in the end. Nevertheless, I
-wanted some lightweight signal telling me whether the current file contains
-uncommitted changes or not.
+I had been using [airblade/vim-gitgutter][gitgutter] for a long time, however,
+I felt distracted by the indicators in the sign column in the end.
+Nevertheless, I wanted some lightweight signal telling me whether the current
+file contains uncommitted changes or not.
 
-So, this little plugin for itchyny/lightline.vim was born. By default the
-plugin shows an indicator such as the following:
+So, this little plugin for [itchyny/lightline.vim][lightline] was born. By
+default the plugin shows an indicator such as the following:
 
 ```
 A: 4 D: 6
@@ -67,3 +67,6 @@ decided to cache the result and update only when really needed.
 
 Probably this code has some sharp edges. Feel free to report bugs, suggestions
 and pull requests. I'll try to fix them as soon as possible.
+
+[gitgutter]: https://github.com/airblade/vim-gitgutter
+[lightline]: https://github.com/itchyny/lightline.vim
