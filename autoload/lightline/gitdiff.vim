@@ -1,7 +1,3 @@
-let s:indicator_added = get(g:, 'lightline#gitdiff#indicator_added', 'A: ')
-let s:indicator_deleted = get(g:, 'lightline#gitdiff#indicator_deleted', 'D: ')
-let s:separator = get(g:, 'lightline#gitdiff#separator', ' ')
-
 function! lightline#gitdiff#get() abort
   return g:lightline#gitdiff#cache
 endfunction
@@ -11,6 +7,10 @@ function! lightline#gitdiff#set() abort
 endfunction
 
 function! lightline#gitdiff#generate() abort
+  let l:indicator_added = get(g:, 'lightline#gitdiff#indicator_added', 'A: ')
+  let l:indicator_deleted = get(g:, 'lightline#gitdiff#indicator_deleted', 'D: ')
+  let l:separator = get(g:, 'lightline#gitdiff#separator', ' ')
+
   if !executable('git') || !lightline#gitdiff#is_inside_work_tree()
     " b/c cannot do anything
     return ''
@@ -24,10 +24,10 @@ function! lightline#gitdiff#generate() abort
     return ''
   endif
 
-  let l:lines_added = l:stats[0] ==# '0' ? '' : s:indicator_added . l:stats[0]
-  let l:lines_deleted = l:stats[1] ==# '0' ? '' : s:indicator_deleted . l:stats[1]
+  let l:lines_added = l:stats[0] ==# '0' ? '' : l:indicator_added . l:stats[0]
+  let l:lines_deleted = l:stats[1] ==# '0' ? '' : l:indicator_deleted . l:stats[1]
 
-  return join([l:lines_added, l:lines_deleted], s:separator)
+  return join([l:lines_added, l:lines_deleted], l:separator)
 endfunction
 
 function! lightline#gitdiff#is_inside_work_tree() abort
