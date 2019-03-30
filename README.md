@@ -16,6 +16,35 @@ This says that there are uncommitted changes. In the current buffer 4 lines
 were added and 6 lines were deleted. If there are no uncommitted changes,
 nothing is shown to reduce distraction.
 
+# Installation
+
+Use your favourite plugin manager and add `lightline#gitdiff#get` to your
+lightline e.g.:
+
+```vim
+let g:lightline = {
+      \ 'active': {
+      \   'left': [ [ 'mode', 'paste' ],
+      \             [ 'gitbranch', 'filename', 'readonly', 'modified' ],
+      \             [ 'gitdiff' ] ],
+      \   'right': [ [ 'lineinfo' ],
+      \              [ 'percent' ] ]
+      \ },
+      \ 'inactive': {
+      \   'left': [ [ 'filename', 'gitversion' ] ],
+      \ },
+      \ 'component_function': {
+      \   'gitbranch': 'fugitive#head',
+      \ },
+      \ 'component_expand': {
+      \   'gitdiff': 'lightline#gitdiff#get',
+      \ },
+      \ 'component_type': {
+      \   'gitdiff': 'middle',
+      \ },
+      \ }
+```
+
 # Configuration
 
 You can configure the indicators and the separator between added and deleted
