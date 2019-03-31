@@ -62,12 +62,17 @@ let g:lightline#gitdiff#indicator_deleted = 'D: '
 let g:lightline#gitdiff#separator = ' '
 ```
 
-# How it works
+# How it works / performance
 
-In the background, the plugin occasionally calls `git --numstat` for the
-current buffer. When developing the plugin I figured that calling the command
-every time lightline updates i.e., on every keystroke, is very expensive. So I
-decided to cache the result and update only when really needed.
+In the background, the plugin calls `git --numstat` for the current buffer and
+caches the result.
+
+If possible e.g., when an already open buffer is entered, the cache is used and
+no call to `git` is made. `git` is only executed when reading or writing to a
+buffer. See the `augroup` in [plugin/lightline/gitdiff.vim][augroup].
+
+If you have any suggestions to improve the performance, please let me know. I
+am happy to implement them on my own -- or you can create a pull request.
 
 # Bugs etc.
 
@@ -76,3 +81,4 @@ and pull requests. I'll try to fix them as soon as possible.
 
 [gitgutter]: https://github.com/airblade/vim-gitgutter
 [lightline]: https://github.com/itchyny/lightline.vim
+[augroup]: https://github.com/niklaas/lightline-gitdiff/blob/master/plugin/lightline/gitdiff.vim
