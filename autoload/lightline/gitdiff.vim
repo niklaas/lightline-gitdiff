@@ -63,6 +63,21 @@ function! s:calculate() abort
   return l:ret
 endfunction
 
+function! s:get_diff_porcelain() abort
+  " return the ouput of `git diff --word-diff=porcelain --unified=0` linewise
+  "
+  " systemlist()
+endfunction
+
+function! s:clean_diff_porcelain() abort
+  " return cleaned porcelain (remove header of diff, only lines between `@@`)
+endfunction
+
+function! s:group_diff_porcelain() abort
+  " return grouped porcelain by `@@` -> each group is a single change
+  " in `calculate()` each group is analysed and a final result calculated
+endfunction
+
 function! s:is_inside_work_tree() abort "{{{
   call system('cd ' . expand('%:p:h:S') . ' && git rev-parse --is-inside-work-tree --prefix ' . expand('%:h:S'))
   return !v:shell_error
