@@ -2,11 +2,24 @@ function! lightline#gitdiff#get() abort
   return lightline#gitdiff#format(g:lightline#gitdiff#cache[bufnr('%')])
 endfunction
 
-" write_to_cache writes the information got from `git --numstat` into the
+" update writes the diff of the current buffer to the cache and calls a
+" callback function afterwards if it exists. The callback function can be
+" defined in `g:lightline#gitdiff#update_callback`.
+function! lightline#gitdiff#update(soft)
+  call s:write_diff_to_cache(a:soft)
+
+  let l:callback = get(g:, 'lightline#gitdiff#update_callback', 'lightline#update')
+
+  if exists('*' . l:callback)
+    execute 'call ' . l:callback . '()'
+  endif
+endfunction
+
+" write_diff_to_cache writes the information got from `git --numstat` into the
 " cache. There is an option to perform a "soft" write to reduce calls to `git`
 " when needed. Anyway, the function ensures that there is data in the cache
 " for the current buffer.
-function! lightline#gitdiff#write_to_cache(soft) abort
+function! s:write_diff_to_cache(soft) abort
   if a:soft && has_key(g:lightline#gitdiff#cache, bufnr('%'))
     " b/c there is something in the cache already
     return 
