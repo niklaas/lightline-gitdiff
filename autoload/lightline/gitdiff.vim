@@ -12,8 +12,8 @@ function! lightline#gitdiff#write_to_cache(soft) abort
     return 
   endif
 
-  " let g:lightline#gitdiff#cache[bufnr('%')] = s:calculate_numstat()
-  let g:lightline#gitdiff#cache[bufnr('%')] = s:calculate_porcelain()
+  let l:F = get(g:, 'lightline#gitdiff#algorithm', { -> s:calculate_porcelain() })
+  let g:lightline#gitdiff#cache[bufnr('%')] = l:F()
 endfunction
 
 " format returns how many lines were added and/or deleted in a nicely
@@ -66,14 +66,17 @@ function! s:calculate_numstat() abort
   return l:ret
 endfunction
 
+" calculate_porcelain transcodes a `git diff --word-diff=porcelain` and
+" returns a dictionary that tells how many lines in the diff mean Addition,
+" Deletion or Modification.
 function! s:calculate_porcelain() abort
   let l:indicator_groups = s:transcode_diff_porcelain(s:get_diff_porcelain())
 
-  let l:indicators = map(copy(l:indicator_groups), { idx, val -> s:parse_indicator_group(val) })
+  let l:changes = map(copy(l:indicator_groups), { idx, val -> s:parse_indicator_group(val) })
 
-  let l:lines_added = len(filter(copy(l:indicators), { idx, val -> val ==# 'A' }))
-  let l:lines_deleted = len(filter(copy(l:indicators), { idx, val -> val ==# 'D' }))
-  let l:lines_modified = len(filter(copy(l:indicators), { idx, val -> val ==# 'M' }))
+  let l:lines_added = len(filter(copy(l:changes), { idx, val -> val ==# 'A' }))
+  let l:lines_deleted = len(filter(copy(l:changes), { idx, val -> val ==# 'D' }))
+  let l:lines_modified = len(filter(copy(l:changes), { idx, val -> val ==# 'M' }))
 
   let l:ret = {}
 
@@ -106,10 +109,10 @@ endfunction
 "
 "   [ [' ', '-', '~'], ['~'], ['+', '~'], ['+', '-', '~' ] ]
 "
-" This translates to Deletion, Addition, Addition and Modification. The
-" characters ' ', '-', '+', '~' are the very first columns of a
-" `--word-diff=porcelain` output and include everything we need for
-" calculation.
+" This translates to Deletion, Addition, Addition and Modification eventually,
+" see s:parse_indicator_group. The characters ' ', '-', '+', '~' are the very
+" first columns of a `--word-diff=porcelain` output and include everything we
+" need for calculation.
 function! s:transcode_diff_porcelain(porcelain) abort
   " b/c we do not need the line identifiers
   call filter(a:porcelain, { idx, val -> val !~# '^@@' })
@@ -117,13 +120,30 @@ function! s:transcode_diff_porcelain(porcelain) abort
   " b/c we only need the identifiers at the first char of each diff line
   call map(a:porcelain, { idx, val -> strcharpart(val, -1, 2) })
 
-  return s:group_at_right({ el -> el ==# '~' }, a:porcelain, v:true)
+  return s:group_at({ el -> el ==# '~' }, a:porcelain, v:true)
 endfunction
 
 " parse_indicator_group parses a group of indicators af a word-diff porcelain
 " that describes an Addition, Delition or Modification. It returns a single
 " character of either 'A', 'D', 'M' for the type of diff that is recorded by
-" the group.
+" the group respectively. A group looks like the following:
+"
+"   [' ', '+', '~']
+"
+" In this case it means A_ddition. The algorithm is rather simple because
+" there are only four indicators: ' ', '+', '-', '~'. These are the rules:
+"
+"   1. Sometimes a group starts with a 'space'. This can be ignored.
+"   2. '+' and '-' I call "changers". In combination with other indicators
+"      they specify what kind of change was made.
+"   3. If a '+' or '-' is follwed by a '~' the group means Addition or
+"      Deletion respectively.
+"   4. If a '+' or '-' is followed by anything else than a '~' it is a
+"      Modification.
+"   5. If the group consists of a single '~' it is an Addition.
+"
+" The method implements this algorithm. It is far from perfect but seems to
+" work as some tests showed.
 function! s:parse_indicator_group(indicators) abort
   let l:action = ''  " A_ddition, D_eletion or M_odification
   let l:changer = ''
@@ -134,60 +154,59 @@ function! s:parse_indicator_group(indicators) abort
       continue
     endif
 
-    if el ==# '+' || el ==# '-'
-      if l:changer ==# ''
-        " changer was found
-        let l:changer = el
-        continue
-      else
-        " 2nd changer found i.e., modification
-        return 'M'
-      endif
+    if el ==# '+' || el ==# '-' && l:changer ==# ''
+      " changer found
+      let l:changer = el
+      continue
     endif
 
-    if el ==# '~'
-      if l:changer ==# '' || l:changer ==# '+'
-        " a single `~` stands for a new line i.e., an addition
-        return 'A'
-      else
-        " b/c changer must be '-'
-        return 'D'
-      endif
+    if el ==# '~' && l:changer ==# ''
+      return 'A'
     endif
+
+    if el ==# '~' && l:changer ==# '+'
+      return 'A'
+    endif
+
+    if el ==# '~' && l:changer ==# '-'
+      return 'D'
+    endif
+
+    return 'M'
   endfor
 
   " b/c we should never end up here
-  echoerr 'Could not parse indicator group of word-diff porcelain'
+  echoerr 'lightline#gitdiff: Could not parse indicator group of word-diff porcelain: ' . join(a:indicators, ', ')
 endfunction
 
 " group_at groups a list of elements where `f` evaluates to true returning a
 " list of lists. `f` must take a single parameter; each element is used as an
 " argument to `f`. If `borders` is true, the matched element is included in
-" each group at the beginning.
-function! s:group_at(f, list, borders) abort
-  let grouped_list = []
+" each group at the end.
+function! s:group_at(f, list, borders) abort "{{{1
+  " for the first element this must be true to initialise the list with an
+  " empty group at the beginning
+  let l:is_previous_border = v:true
+  let l:grouped_list = []
 
   for el in a:list
-    if a:f(el)
+    if l:is_previous_border
       call add(l:grouped_list, [])
-      if !a:borders
-        continue
-      endif
     endif
 
-    call add(l:grouped_list[len(l:grouped_list)], el)
+    let l:is_previous_border = a:f(el) ? v:true : v:false
+
+    if !a:borders
+      continue
+    endif
+
+    call add(l:grouped_list[len(l:grouped_list)-1], el)
   endfor
 
-  return grouped_list
+  return l:grouped_list
 endfunction
 
-" group_at_right behaves the same as group_at except that the matched element
-" is included in each group /at the end/.
-function! s:group_at_right(f, list, borders) abort
-  return reverse(s:group_at(a:f, reverse(a:list), a:borders))
-endfunction
-
-function! s:is_inside_work_tree() abort "{{{
+function! s:is_inside_work_tree() abort "{{{1
   call system('cd ' . expand('%:p:h:S') . ' && git rev-parse --is-inside-work-tree --prefix ' . expand('%:h:S'))
   return !v:shell_error
 endfunction
