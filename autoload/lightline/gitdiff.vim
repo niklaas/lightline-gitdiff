@@ -47,9 +47,11 @@ function! lightline#gitdiff#format(diff_dict) abort
   let l:separator = get(g:, 'lightline#gitdiff#separator', ' ')
 
   let l:diff_dict_mapping = { 'A': 'added', 'D': 'deleted', 'M': 'modified' }
-  let l:DiffDictKeyValueFormatter = { key, val -> has_key(a:diff_dict, key) ? get(g:, 'lightline#gitdiff#indicator_' . val, key . ': ') . a:diff_dict[key] : '' }
+  let l:DiffDictKeyValueFormatter = { key, val -> has_key(a:diff_dict, key) ?
+        \ get(g:, 'lightline#gitdiff#indicator_' . val, key . ': ') . a:diff_dict[key] : '' }
 
-  return join(values(filter(map(l:diff_dict_mapping, l:DiffDictKeyValueFormatter), { key, val -> val !=# '' })), l:separator)
+  return join(values(filter(map(l:diff_dict_mapping, l:DiffDictKeyValueFormatter),
+        \ { key, val -> val !=# '' })), l:separator)
 endfunction
 
 " calculate_numstat queries git to get the amount of lines that were added and/or
