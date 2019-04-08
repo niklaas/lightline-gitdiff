@@ -29,19 +29,27 @@ function! s:write_diff_to_cache(soft) abort
   let g:lightline#gitdiff#cache[bufnr('%')] = l:F()
 endfunction
 
-" format returns how many lines were added and/or deleted in a nicely
-" formatted string. The output can be configured with global variables.
-function! lightline#gitdiff#format(data) abort
-  let l:indicator_added = get(g:, 'lightline#gitdiff#indicator_added', 'A: ')
-  let l:indicator_deleted = get(g:, 'lightline#gitdiff#indicator_deleted', 'D: ')
-  let l:indicator_modified = get(g:, 'lightline#gitdiff#indicator_modified', 'M: ')
+" format returns how many lines were added, deleted and/or modified in a
+" nicely formatted string. The output can be configured with the following
+" global variables that are exposed as public API:
+"
+" - lightline#gitdiff#separator
+" - lightline#gitdiff#indicator_added
+" - lightline#gitdiff#indicator_deleted
+" - lightline#gitdiff#indicator_modified
+"
+" It takes what I call "diff_dict" as input i.e., a Dict that has identifiers
+" as keys (`A`, `D`, `M`, ...) and the amount of changes as values. If none of
+" the global variables are set, `format` returns a joined string seprated by a
+" single space with the amount of each type of change prefixed with its key
+" and a colon e.g., `A: 4 D: 5`.
+function! lightline#gitdiff#format(diff_dict) abort
   let l:separator = get(g:, 'lightline#gitdiff#separator', ' ')
 
-  let l:lines_added = has_key(a:data, 'A') ? l:indicator_added . a:data['A'] : ''
-  let l:lines_deleted = has_key(a:data, 'D') ? l:indicator_deleted . a:data['D'] : ''
-  let l:lines_modified = has_key(a:data, 'M') ? l:indicator_modified . a:data['M'] : ''
+  let l:diff_dict_mapping = { 'A': 'added', 'D': 'deleted', 'M': 'modified' }
+  let l:DiffDictKeyValueFormatter = { key, val -> has_key(a:diff_dict, key) ? get(g:, 'lightline#gitdiff#indicator_' . val, key . ': ') . a:diff_dict[key] : '' }
 
-  return join([l:lines_added, l:lines_deleted, l:lines_modified], l:separator)
+  return join(values(filter(map(l:diff_dict_mapping, l:DiffDictKeyValueFormatter), { key, val -> val !=# '' })), l:separator)
 endfunction
 
 " calculate_numstat queries git to get the amount of lines that were added and/or
