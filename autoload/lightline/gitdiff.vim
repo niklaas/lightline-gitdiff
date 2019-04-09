@@ -25,8 +25,11 @@ function! s:write_diff_to_cache(soft) abort
     return 
   endif
 
-  let l:F = get(g:, 'lightline#gitdiff#algorithm', { -> s:calculate_porcelain() })
-  let g:lightline#gitdiff#cache[bufnr('%')] = l:F()
+  " NOTE: Don't expose `g:lightline#gitdiff#algorithm` as public API yet. I'll
+  " probably re-structure the plugin and `...#algorithm` will be put in some
+  " `...#library`...
+  let l:Calculation = get(g:, 'lightline#gitdiff#algorithm', { -> s:calculate_porcelain() })
+  let g:lightline#gitdiff#cache[bufnr('%')] = l:Calculation()
 endfunction
 
 " format returns how many lines were added, deleted and/or modified in a
@@ -61,8 +64,8 @@ endfunction
 " This function is the most expensive one. It calls git twice: to check
 " whether the buffer is in a git repository and to do the actual calculation.
 function! s:calculate_numstat() abort
-  if !executable('git') || !s:is_inside_work_tree()
-    " b/c cannot do anything
+  if !s:is_git_exectuable() || !s:is_inside_work_tree()
+    " b/c there is nothing that can be done here; the algorithm needs git
     return {}
   endif
 
@@ -93,6 +96,11 @@ endfunction
 " returns a dictionary that tells how many lines in the diff mean Addition,
 " Deletion or Modification.
 function! s:calculate_porcelain() abort
+  if !s:is_git_exectuable() || !s:is_inside_work_tree()
+    " b/c there is nothing that can be done here; the algorithm needs git
+    return {}
+  endif
+
   let l:indicator_groups = s:transcode_diff_porcelain(s:get_diff_porcelain())
 
   let l:changes = map(copy(l:indicator_groups), { idx, val -> s:parse_indicator_group(val) })
@@ -232,4 +240,8 @@ endfunction
 function! s:is_inside_work_tree() abort "{{{1
   call system('cd ' . expand('%:p:h:S') . ' && git rev-parse --is-inside-work-tree --prefix ' . expand('%:h:S'))
   return !v:shell_error
+endfunction
+
+function! s:is_git_exectuable() abort "{{{1
+  return executable('git')
 endfunction
