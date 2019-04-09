@@ -61,9 +61,9 @@ endfunction
 " This function is the most expensive one. It calls git twice: to check
 " whether the buffer is in a git repository and to do the actual calculation.
 function! s:calculate_numstat() abort
-  if !executable('git') || !s:is_inside_work_tree()
-    " b/c cannot do anything
-    return {}
+  if !s:is_git_exectuable() || !s:is_inside_work_tree()
+    " b/c there is nothing that can be done
+    return
   endif
 
   let l:stats = split(system('cd ' . expand('%:p:h:S') . ' && git diff --numstat -- ' . expand('%:t:S')))
@@ -121,6 +121,11 @@ endfunction
 " get_diff_porcelain returns the output of git's word-diff as list. The header
 " of the diff is removed b/c it is not needed.
 function! s:get_diff_porcelain() abort
+  if !s:is_git_exectuable() || !s:is_inside_work_tree()
+    " b/c there is nothing that can be done
+    return
+  endif
+
   " return the ouput of `git diff --word-diff=porcelain --unified=0` linewise
   "
   let l:porcelain = systemlist('cd ' . expand('%:p:h:S') . ' && git diff --word-diff=porcelain --unified=0 -- ' . expand('%:t:S'))
@@ -232,4 +237,8 @@ endfunction
 function! s:is_inside_work_tree() abort "{{{1
   call system('cd ' . expand('%:p:h:S') . ' && git rev-parse --is-inside-work-tree --prefix ' . expand('%:h:S'))
   return !v:shell_error
+endfunction
+
+function! s:is_git_exectuable() abort "{{{1
+  return executable('git')
 endfunction
