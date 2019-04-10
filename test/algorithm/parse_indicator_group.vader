@@ -1,0 +1,6 @@
+Execute (should return A_ddition if group is a single `~`):
+  let expected = 'A'
+  let actual = lightline#gitdiff#algorithm#parse_indicator_group(['~'])
+  
+Then:
+  AssertEqual expected, actual
