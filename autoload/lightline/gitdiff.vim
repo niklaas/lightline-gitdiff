@@ -2,7 +2,7 @@ function! lightline#gitdiff#get() abort
   return lightline#gitdiff#format(g:lightline#gitdiff#cache[bufnr('%')])
 endfunction
 
-" update writes the diff of the current buffer to the cache and calls a
+" update() {{{1 writes the diff of the current buffer to the cache and calls a
 " callback function afterwards if it exists. The callback function can be
 " defined in `g:lightline#gitdiff#update_callback`.
 function! lightline#gitdiff#update(soft)
@@ -15,10 +15,10 @@ function! lightline#gitdiff#update(soft)
   endif
 endfunction
 
-" write_diff_to_cache writes the information got from `git --numstat` into the
-" cache. There is an option to perform a "soft" write to reduce calls to `git`
-" when needed. Anyway, the function ensures that there is data in the cache
-" for the current buffer.
+" write_diff_to_cache() {{{1 writes the information got from `git --numstat`
+" into the cache. There is an option to perform a "soft" write to reduce calls
+" to `git` when needed. Anyway, the function ensures that there is data in the
+" cache for the current buffer.
 function! s:write_diff_to_cache(soft) abort
   if a:soft && has_key(g:lightline#gitdiff#cache, bufnr('%'))
     " b/c there is something in the cache already
@@ -28,12 +28,13 @@ function! s:write_diff_to_cache(soft) abort
   " NOTE: Don't expose `g:lightline#gitdiff#algorithm` as public API yet. I'll
   " probably re-structure the plugin and `...#algorithm` will be put in some
   " `...#library`...
-  let l:Calculation = get(g:, 'lightline#gitdiff#algorithm', { -> s:calculate_porcelain() })
+  let l:Calculation = get(g:, 'lightline#gitdiff#algorithm',
+        \ { -> lightline#gitdiff#algorithms#word_diff_porcelain#calculate() })
   let g:lightline#gitdiff#cache[bufnr('%')] = l:Calculation()
 endfunction
 
-" format returns how many lines were added, deleted and/or modified in a
-" nicely formatted string. The output can be configured with the following
+" format() {{{1 returns how many lines were added, deleted and/or modified in
+" a nicely formatted string. The output can be configured with the following
 " global variables that are exposed as public API:
 "
 " - lightline#gitdiff#separator
@@ -55,137 +56,4 @@ function! lightline#gitdiff#format(diff_dict) abort
 
   return join(values(filter(map(l:diff_dict_mapping, l:DiffDictKeyValueFormatter),
         \ { key, val -> val !=# '' })), l:separator)
-endfunction
-
-" calculate_numstat queries git to get the amount of lines that were added and/or
-" deleted. It returns a dict with two keys: 'A' and 'D'. 'A' holds how many
-" lines were added, 'D' holds how many lines were deleted.
-"
-" This function is the most expensive one. It calls git twice: to check
-" whether the buffer is in a git repository and to do the actual calculation.
-function! s:calculate_numstat() abort
-  if !s:is_git_exectuable() || !s:is_inside_work_tree()
-    " b/c there is nothing that can be done here; the algorithm needs git
-    return {}
-  endif
-
-  let l:stats = split(system('cd ' . expand('%:p:h:S') . ' && git diff --numstat -- ' . expand('%:t:S')))
-
-  if len(l:stats) < 2 || join(l:stats[:1], '') !~# '^\d\+$'
-    " b/c there are no changes made, the file is untracked or some error
-    " occured
-    return {}
-  endif
-
-  let l:ret = {}
-
-  " lines added
-  if l:stats[0] !=# '0'
-    let l:ret['A'] = l:stats[0]
-  endif
-
-  " lines deleted
-  if l:stats[1] !=# '0'
-    let l:ret['D'] = l:stats[1]
-  endif
-
-  return l:ret
-endfunction
-
-" calculate_porcelain transcodes a `git diff --word-diff=porcelain` and
-" returns a dictionary that tells how many lines in the diff mean Addition,
-" Deletion or Modification.
-function! s:calculate_porcelain() abort
-  if !s:is_git_exectuable() || !s:is_inside_work_tree()
-    " b/c there is nothing that can be done here; the algorithm needs git
-    return {}
-  endif
-
-  let l:indicator_groups = s:transcode_diff_porcelain(s:get_diff_porcelain())
-
-  let l:changes = map(copy(l:indicator_groups), { idx, val -> lightline#gitdiff#algorithm#parse_indicator_group(val) })
-
-  let l:lines_added = len(filter(copy(l:changes), { idx, val -> val ==# 'A' }))
-  let l:lines_deleted = len(filter(copy(l:changes), { idx, val -> val ==# 'D' }))
-  let l:lines_modified = len(filter(copy(l:changes), { idx, val -> val ==# 'M' }))
-
-  let l:ret = {}
-
-  if l:lines_added > 0
-    let l:ret['A'] = l:lines_added
-  endif
-
-  if l:lines_deleted > 0
-    let l:ret['D'] = l:lines_deleted
-  endif
-
-  if l:lines_modified > 0
-    let l:ret['M'] = l:lines_modified
-  endif
-
-  return l:ret
-endfunction
-
-" get_diff_porcelain returns the output of git's word-diff as list. The header
-" of the diff is removed b/c it is not needed.
-function! s:get_diff_porcelain() abort
-  " return the ouput of `git diff --word-diff=porcelain --unified=0` linewise
-  "
-  let l:porcelain = systemlist('cd ' . expand('%:p:h:S') . ' && git diff --word-diff=porcelain --unified=0 -- ' . expand('%:t:S'))
-  return l:porcelain[4:]
-endfunction
-
-" transcode_diff_porcelain turns a diff porcelain into a list of lists such as
-" the following:
-"
-"   [ [' ', '-', '~'], ['~'], ['+', '~'], ['+', '-', '~' ] ]
-"
-" This translates to Deletion, Addition, Addition and Modification eventually,
-" see s:parse_indicator_group. The characters ' ', '-', '+', '~' are the very
-" first columns of a `--word-diff=porcelain` output and include everything we
-" need for calculation.
-function! s:transcode_diff_porcelain(porcelain) abort
-  " b/c we do not need the line identifiers
-  call filter(a:porcelain, { idx, val -> val !~# '^@@' })
-
-  " b/c we only need the identifiers at the first char of each diff line
-  call map(a:porcelain, { idx, val -> strcharpart(val, -1, 2) })
-
-  return s:group_at({ el -> el ==# '~' }, a:porcelain, v:true)
-endfunction
-
-" group_at groups a list of elements where `f` evaluates to true returning a
-" list of lists. `f` must take a single parameter; each element is used as an
-" argument to `f`. If `borders` is true, the matched element is included in
-" each group at the end.
-function! s:group_at(f, list, borders) abort "{{{1
-  " for the first element this must be true to initialise the list with an
-  " empty group at the beginning
-  let l:is_previous_border = v:true
-  let l:grouped_list = []
-
-  for el in a:list
-    if l:is_previous_border
-      call add(l:grouped_list, [])
-    endif
-
-    let l:is_previous_border = a:f(el) ? v:true : v:false
-
-    if !a:borders
-      continue
-    endif
-
-    call add(l:grouped_list[len(l:grouped_list)-1], el)
-  endfor
-
-  return l:grouped_list
-endfunction
-
-function! s:is_inside_work_tree() abort "{{{1
-  call system('cd ' . expand('%:p:h:S') . ' && git rev-parse --is-inside-work-tree --prefix ' . expand('%:h:S'))
-  return !v:shell_error
-endfunction
-
-function! s:is_git_exectuable() abort "{{{1
-  return executable('git')
 endfunction
