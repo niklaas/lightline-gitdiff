@@ -16,40 +16,36 @@
 "   4. If a '+' or '-' is followed by anything else than a '~' it is a
 "      Modification.
 "   5. If the group consists of a single '~' it is an Addition.
+"   6. There must be one but only one '~' in *every* group.
 "
 " The method implements this algorithm. It is far from perfect but seems to
 " work as some tests showed.
 function! lightline#gitdiff#algorithm#parse_indicator_group(indicators) abort
-  let l:action = ''  " A_ddition, D_eletion or M_odification
   let l:changer = ''
 
-  for el in a:indicators
-    if el ==# ' ' && l:changer ==# ''
-      " b/c first element with no meaning
-      continue
-    endif
+  if len(a:indicators) ==# 1 && a:indicators[0] ==# '~'
+    return 'A'
+  endif
 
-    if el ==# '+' || el ==# '-' && l:changer ==# ''
-      " changer found
+  for el in a:indicators
+    if l:changer ==# '' && ( el ==# '-' || el ==# '+' )
       let l:changer = el
       continue
     endif
 
-    if el ==# '~' && l:changer ==# ''
+    if l:changer ==# '+' && el ==# '~'
       return 'A'
     endif
 
-    if el ==# '~' && l:changer ==# '+'
-      return 'A'
-    endif
-
-    if el ==# '~' && l:changer ==# '-'
+    if l:changer ==# '-' && el ==# '~' 
       return 'D'
     endif
 
-    return 'M'
+    if l:changer !=# el
+      return 'M'
+    endif
   endfor
 
   " b/c we should never end up here
-  echoerr 'lightline#gitdiff: Could not parse indicator group of word-diff porcelain: ' . join(a:indicators, ', ')
+  echoerr 'lightline#gitdiff: Error parsing indicator group: [ ' . join(a:indicators, ', ') . ' ]'
 endfunction
