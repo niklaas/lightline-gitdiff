@@ -1,40 +1,40 @@
 # Addition {{{1
 
-Execute (given indicator group is [`~`]):
+Execute (parse_indicator_group(): given indicator group is [`~`]):
   let actual = lightline#gitdiff#algorithm#parse_indicator_group(['~'])
 Then (should return A_ddition):
   AssertEqual 'A', actual
 
-Execute (given indicator group is ['+', '~']):
+Execute (parse_indicator_group(): given indicator group is ['+', '~']):
   let actual = lightline#gitdiff#algorithm#parse_indicator_group(['+', '~'])
 Then (should return A_ddition):
   AssertEqual 'A', actual
 
 # Deletion {{{1
 
-Execute (given indicator group is ['-', '~']):
+Execute (parse_indicator_group(): given indicator group is ['-', '~']):
   let actual = lightline#gitdiff#algorithm#parse_indicator_group(['-', '~'])
 Then (should return D_eletion):
   AssertEqual 'D', actual
 
 # Modification {{{1
 
-Execute (given indicator group is ['-', '+', '~']):
+Execute (parse_indicator_group(): given indicator group is ['-', '+', '~']):
   let actual = lightline#gitdiff#algorithm#parse_indicator_group(['-', '+', '~'])
 Then (should return M_odification):
   AssertEqual 'M', actual
 
-Execute (given indicator group is [' ', '+', ' ', '~']):
+Execute (parse_indicator_group(): given indicator group is [' ', '+', ' ', '~']):
   let actual = lightline#gitdiff#algorithm#parse_indicator_group([' ', '+', ' ', '~'])
 Then (should return M_odification):
   AssertEqual 'M', actual
 
-Execute (given indicator group is [' ', '-', ' ', '~']):
+Execute (parse_indicator_group(): given indicator group is [' ', '-', ' ', '~']):
   let actual = lightline#gitdiff#algorithm#parse_indicator_group([' ', '-', ' ', '~'])
 Then (should return M_odification):
   AssertEqual 'M', actual
 
-Execute (given indicator group is [' ', '~']):
+Execute (parse_indicator_group(): given indicator group is [' ', '~']):
 # because a single space was inserted at the beginning of a line
   let actual = lightline#gitdiff#algorithm#parse_indicator_group([' ', '~'])
 Then (should return M_odification):
