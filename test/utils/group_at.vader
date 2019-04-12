@@ -1,0 +1,87 @@
+Before:
+  let g:Matcher = { el -> el ==# 'X' }
+
+# Empty list {{{1
+
+Execute (group_at(): given an empty list):
+  let borders = [ v:true, v:false ]
+  let actuals = map(copy(borders), { idx, b -> 
+    \   lightline#gitdiff#utils#group_at(g:Matcher, [], b)
+    \ })
+Then (should return an empty list):
+  AssertEqual [ [], [] ], actuals
+
+# Single element {{{1
+
+Execute (group_at(): given a list with single element, not matching):
+  let borders = [ v:true, v:false ]
+  let actuals = map(copy(borders), { idx, b -> 
+    \   lightline#gitdiff#utils#group_at(g:Matcher, ['a'], b)
+    \ })
+Then (should return a list with a single group, including the element):
+  AssertEqual [ [['a']], [['a']] ], actuals
+
+Execute (group_at(): given a list with single element, single match, excluding borders):
+  let actual = lightline#gitdiff#utils#group_at(g:Matcher, ['X'], v:false)
+Then (should return an empty list):
+  AssertEqual [], actual
+
+Execute (group_at(): given a list with single element, single match, including borders):
+  let actual = lightline#gitdiff#utils#group_at(g:Matcher, ['X'], v:true)
+Then (should return an empty list):
+  AssertEqual [ ['X'] ], actual
+
+# Multiple elements {{{1
+
+Execute (group_at(): given a list with two elements, not matching):
+  let borders = [ v:true, v:false ]
+  let actuals = map(copy(borders), { idx, b -> 
+    \   lightline#gitdiff#utils#group_at(g:Matcher, ['a', 'b'], b)
+    \ })
+Then (should return a list with a single group, including the elements):
+  AssertEqual [ [['a', 'b']], [['a', 'b']] ], actuals
+
+
+Execute (group_at(): given a list with two elements, single match, excluding borders):
+  let actual = lightline#gitdiff#utils#group_at(g:Matcher, ['a', 'X'], v:false)
+Then (should return a list with a single element, excluding the border):
+  AssertEqual [ ['a'] ], actual
+
+Execute (group_at(): given a list with two elements, single match, including borders):
+  let actual = lightline#gitdiff#utils#group_at(g:Matcher, ['a', 'X'], v:true)
+Then (should return a list with a single element, including the border):
+  AssertEqual [ ['a', 'X'] ], actual
+
+
+Execute (group_at(): given a list with multiple elements, single match, including borders):
+  let lists = [ ['a', 'b', 'X'], ['a', 'b', 'X', 'c'] ]
+  let actuals = map(copy(lists), { idx, l ->
+    \   lightline#gitdiff#utils#group_at(g:Matcher, l, v:true)
+    \ })
+Then (should return a list with a single element, including the border):
+  AssertEqual [ [['a', 'b', 'X']], [['a', 'b', 'X'], ['c']] ], actuals
+
+Execute (group_at(): given a list with multiple elements, multiple matches, including borders):
+  let lists = [ ['a', 'b', 'X', 'X'], ['a', 'b', 'X', 'c', 'X', 'd'] ]
+  let actuals = map(copy(lists), { idx, l ->
+    \   lightline#gitdiff#utils#group_at(g:Matcher, l, v:true)
+    \ })
+Then (should return a list with a single element, including the border):
+  AssertEqual [ [['a', 'b', 'X'], ['X']], [['a', 'b', 'X'], ['c', 'X'], ['d']] ], actuals
+
+
+Execute (group_at(): given a list with multiple elements, single match, excluding borders):
+  let lists = [ ['a', 'b', 'X'], ['a', 'b', 'X', 'c'] ]
+  let actuals = map(copy(lists), { idx, l ->
+    \   lightline#gitdiff#utils#group_at(g:Matcher, l, v:false)
+    \ })
+Then (should return a list with a single element, including the border):
+  AssertEqual [ [['a', 'b']], [['a', 'b'], ['c']] ], actuals
+
+Execute (group_at(): given a list with multiple elements, multiple matches, excluding borders):
+  let lists = [ ['a', 'b', 'X', 'X'], ['a', 'b', 'X', 'c', 'X', 'd'] ]
+  let actuals = map(copy(lists), { idx, l ->
+    \   lightline#gitdiff#utils#group_at(g:Matcher, l, v:false)
+    \ })
+Then (should return a list with a single element, including the border):
+  AssertEqual [ [['a', 'b']], [['a', 'b'], ['c'], ['d']] ], actuals
