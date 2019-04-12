@@ -15,7 +15,8 @@ function! lightline#gitdiff#utils#group_at(f, list, borders) abort
 
     let l:is_previous_border = a:f(el) ? v:true : v:false
 
-    if !a:borders
+    if a:f(el) && !a:borders
+      " This element matches but not borders should be included
       continue
     endif
 
