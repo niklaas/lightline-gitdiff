@@ -4,19 +4,22 @@
 " each group at the end.
 function! lightline#gitdiff#utils#group_at(f, list, borders) abort
   " for the first element this must be true to initialise the list with an
-  " empty group at the beginning
+  " empty group at the beginning (if it's not a border that should be
+  " excluded)
   let l:is_previous_border = v:true
   let l:grouped_list = []
 
   for el in a:list
-    if l:is_previous_border
+    " element matches but not borders should be included
+    let l:skip_this = a:f(el) && !a:borders
+
+    if l:is_previous_border && !l:skip_this
       call add(l:grouped_list, [])
     endif
 
     let l:is_previous_border = a:f(el) ? v:true : v:false
 
-    if a:f(el) && !a:borders
-      " This element matches but not borders should be included
+    if l:skip_this
       continue
     endif
 
