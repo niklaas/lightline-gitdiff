@@ -131,7 +131,7 @@ endfunction
 function! s:get_diff_porcelain() abort
   " return the ouput of `git diff --word-diff=porcelain --unified=0` linewise
   "
-  let l:porcelain = systemlist('cd ' . expand('%:p:h:S') . ' && git diff --word-diff=porcelain --unified=0 -- ' . expand('%:t:S'))
+  let l:porcelain = systemlist('cd ' . expand('%:p:h:S') . ' && git diff --no-ext-diff --word-diff=porcelain --unified=0 -- ' . expand('%:t:S'))
   return l:porcelain[4:]
 endfunction
 
