@@ -37,7 +37,7 @@ endfunction
 " header of the diff is removed b/c it is not needed.
 function! s:get_diff_porcelain() abort
   let l:porcelain = systemlist('cd ' . expand('%:p:h:S') .
-        \ ' && git diff --word-diff=porcelain --unified=0 -- ' . expand('%:t:S'))
+        \ ' && git diff --no-ext-diff --word-diff=porcelain --unified=0 -- ' . expand('%:t:S'))
   return l:porcelain[4:]
 endfunction
 

@@ -7,7 +7,7 @@ function! lightline#gitdiff#algorithms#numstat#calculate() abort
     return {}
   endif
 
-  let l:stats = split(system('cd ' . expand('%:p:h:S') . ' && git diff --numstat -- ' . expand('%:t:S')))
+  let l:stats = split(system('cd ' . expand('%:p:h:S') . ' && git diff --no-ext-diff --numstat -- ' . expand('%:t:S')))
 
   if len(l:stats) < 2 || join(l:stats[:1], '') !~# '^\d\+$'
     " b/c there are no changes made, the file is untracked or some error
