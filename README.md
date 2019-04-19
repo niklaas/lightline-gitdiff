@@ -78,14 +78,26 @@ which should give you pretty much the same result as the screenshot.
 
 # Configuration
 
-You can configure the indicators and the separator between them. The following
-are the defaults:
+You can configure the appearance of the indicators and the separator between
+them. The following are the defaults:
 
 ```vim
 let g:lightline#gitdiff#indicator_added = 'A: '
 let g:lightline#gitdiff#indicator_deleted = 'D: '
 let g:lightline#gitdiff#separator = ' '
 ```
+
+A callback function is called every time the `diff` is updated and written to
+the cache. By default this is `lightline#update()` to update lightline with
+the newly calculated `diff`. However, you can also provide you own callback
+function in the following way:
+
+```vim
+let g:lightline#gitdiff#update_callback = { -> MyCustomCallback() }
+```
+
+If the callback function is not defined, this is an error that is caught. This
+should allow to use the plugin with any type of `statusline` plugin.
 
 # How it works / performance
 
