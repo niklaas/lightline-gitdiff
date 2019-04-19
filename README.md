@@ -99,9 +99,25 @@ let g:lightline#gitdiff#update_callback = { -> MyCustomCallback() }
 If the callback function is not defined, this is an error that is caught. This
 should allow to use the plugin with any type of `statusline` plugin.
 
+You can even change the algorithm that is used to calculate the `diff`. The
+plugin comes bundled with two algorithms: `numstat` and `word_diff_porcelain`.
+By default, the latter one is used because it allows to display modified lines.
+`numstat` is much simpler but only supports showing added and deleted lines.
+This resembles the default:
+
+```vim
+let g:lightline#gitdiff#algorithm =
+      \ { lightline#gitdiff#algorithms#word_diff_porcelain#calculate() }
+```
+
+Substitute `word_diff_porcelain` with `numstat` if you want to switch -- or
+provide your own. Take a look at the source of both functions for inspiration
+or consult me if you need help. I am happy to bundle additional faster and more
+feature-rich algorithms in the package.
+
 # How it works / performance
 
-In the background, the `lightline#gitdiff#get()` calls `git --numstat` or `git
+In the background, `lightline#gitdiff#get()` calls `git --numstat` or `git
 --word-diff=porcelain` (depending on the algorithm you choose, the latter being
 the default) for the current buffer and caches the result.
 
