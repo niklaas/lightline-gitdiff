@@ -6,22 +6,22 @@ said, I wanted some lightweight signal indicating whether the current file
 contains uncommitted changes to the repository or not.
 
 So, this little plugin was born. I myself use
-[itchyny/lightline.vim][lightline] to configure the statusline of vim easily. .
-This is where the name of the plugin comes from. In addition, I embrace
+[itchyny/lightline.vim][lightline] to configure the statusline of vim easily,
+so this is where the name of the plugin comes from. In addition, I embrace
 lightlines's philosophy to provide a lightweight and stable, yet configurable
-plugin that "just works". In addition, you can also integrate the plugin with
-vim's vanilla `statusline` because it generates nothing more than a string.
+plugin that "just works". However, you can also integrate the plugin with vim's
+vanilla `statusline`.
 
-By default the plugin shows an indicator such as the following:
+By default the plugin shows indicators such as the following:
 
 ```
 A: 4 D: 6 M: 2
 ```
 
-which indicates that, in comparison to the git index, the current buffer
-contains 12 uncommitted changes: four lines were deleted, six lines were added
-and two lines only modified. If there are no uncommitted changes, nothing is
-shown to reduce distraction.
+This says that, in comparison to the git index, the current buffer contains 12
+uncommitted changes: four lines were deleted, six lines were added and two
+lines only modified. If there are no uncommitted changes, nothing is shown to
+reduce distraction.
 
 You can see the plugin in action in my statusline/lightline:
 
@@ -74,7 +74,7 @@ let g:lightline = {
       \ }
 ```
 
-which should give you pretty much the same result as the screenshot.
+which should give you pretty much the same result as shown in the screenshot.
 
 # Configuration
 
@@ -96,8 +96,8 @@ function in the following way:
 let g:lightline#gitdiff#update_callback = { -> MyCustomCallback() }
 ```
 
-If the callback function is not defined, this is an error that is caught. This
-should allow to use the plugin with any type of `statusline` plugin.
+If the callback function is not defined, the error is caught. This allows to
+use the plugin with any type of `statusline` plugin.
 
 You can even change the algorithm that is used to calculate the `diff`. The
 plugin comes bundled with two algorithms: `numstat` and `word_diff_porcelain`.
@@ -107,7 +107,7 @@ This resembles the default:
 
 ```vim
 let g:lightline#gitdiff#algorithm =
-      \ { lightline#gitdiff#algorithms#word_diff_porcelain#calculate() }
+      \ { -> lightline#gitdiff#algorithms#word_diff_porcelain#calculate() }
 ```
 
 Substitute `word_diff_porcelain` with `numstat` if you want to switch -- or
