@@ -10,15 +10,18 @@ endfunction
 " Lightline [1] originally. However, /there is no need to use Lightline/.
 " Since a callback is provided, you can update any other statusbar et al.
 "
+" If the provided callback cannot be found, the error is caught.
+"
 " [1]: https://github.com/itchyny/lightline.vim
 function! lightline#gitdiff#update(soft)
   call lightline#gitdiff#write_calculation_to_cache(a:soft)
 
-  let l:callback = get(g:, 'lightline#gitdiff#update_callback', 'lightline#update')
+  let l:Callback = get(g:, 'lightline#gitdiff#update_callback', { -> lightline#update() })
 
-  if exists('*' . l:callback)
-    execute 'call ' . l:callback . '()'
-  endif
+  try
+    call l:Callback()
+  catch /^Vim\%((\a\+)\)\=:E117/
+  endtry
 endfunction
 
 " write_calculation_to_cache() {{{1 writes the information got from an
