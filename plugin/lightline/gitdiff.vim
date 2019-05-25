@@ -5,7 +5,9 @@ let g:lightline#gitdiff#cache = {}
 augroup lightline#gitdiff
   autocmd!
   " Update hard b/c buffer is new or changed
-  autocmd BufReadPost,BufWritePost * :call lightline#gitdiff#update(v:false)
+  autocmd BufReadPost,BufWritePost * :call lightline#gitdiff#update([bufnr('%')], v:false)
   " Soft update is possible b/c no buffer new or changed
-  autocmd BufEnter * :call lightline#gitdiff#update(v:true)
+  autocmd BufEnter * :call lightline#gitdiff#update([bufnr('%')], v:true)
+  " Update all cached buffers hard b/c change to repository was made
+  autocmd BufDelete COMMIT_EDITMSG :call lightline#gitdiff#update(keys(g:lightline#gitdiff#cache), v:false)
 augroup end
