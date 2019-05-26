@@ -1,5 +1,5 @@
-" Cache stores the information got from `git --numstat`. The key is the buffer
-" number, the value is the amount of lines.
+" Cache stores the information got from the algorithms that process the
+" `diff`s. The key is the buffer number, the value is the amount of lines.
 let g:lightline#gitdiff#cache = {}
 
 augroup lightline#gitdiff
