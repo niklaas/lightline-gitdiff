@@ -107,7 +107,7 @@ This resembles the default:
 
 ```vim
 let g:lightline#gitdiff#algorithm =
-      \ { -> lightline#gitdiff#algorithms#word_diff_porcelain#calculate() }
+      \ { buffer -> lightline#gitdiff#algorithms#word_diff_porcelain#calculate(buffer) }
 ```
 
 Substitute `word_diff_porcelain` with `numstat` if you want to switch -- or

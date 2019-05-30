@@ -1,13 +1,13 @@
-" calculate_porcelain() {{{1 transcodes a `git diff --word-diff=porcelain` and
+" calculate_porcelain {{{1 transcodes a `git diff --word-diff=porcelain` and
 " returns a dictionary that tells how many lines in the diff mean Addition,
 " Deletion or Modification.
-function! lightline#gitdiff#algorithms#word_diff_porcelain#calculate() abort
-  if !lightline#gitdiff#utils#is_git_exectuable() || !lightline#gitdiff#utils#is_inside_work_tree()
+function! lightline#gitdiff#algorithms#word_diff_porcelain#calculate(buffer) abort
+  if !lightline#gitdiff#utils#is_git_exectuable() || !lightline#gitdiff#utils#is_inside_work_tree(a:buffer)
     " b/c there is nothing that can be done here; the algorithm needs git
     return {}
   endif
 
-  let l:indicator_groups = s:transcode_diff_porcelain(s:get_diff_porcelain())
+  let l:indicator_groups = s:transcode_diff_porcelain(s:get_diff_porcelain(a:buffer))
 
   let l:changes = map(copy(l:indicator_groups), { idx, val ->
         \ lightline#gitdiff#algorithms#word_diff_porcelain#parse_indicator_group(val) })
@@ -33,11 +33,11 @@ function! lightline#gitdiff#algorithms#word_diff_porcelain#calculate() abort
   return l:ret
 endfunction
 
-" get_diff_porcelain() {{{1 returns the output of git's word-diff as list. The
+" get_diff_porcelain {{{1 returns the output of git's word-diff as list. The
 " header of the diff is removed b/c it is not needed.
-function! s:get_diff_porcelain() abort
-  let l:porcelain = systemlist('cd ' . expand('%:p:h:S') .
-        \ ' && git diff --no-ext-diff --word-diff=porcelain --unified=0 -- ' . expand('%:t:S'))
+function! s:get_diff_porcelain(buffer) abort
+  let l:porcelain = systemlist('cd ' . expand('#' . a:buffer . ':p:h:S') .
+        \ ' && git diff --no-ext-diff --word-diff=porcelain --unified=0 -- ' . expand('#' . a:buffer . ':t:S'))
   return l:porcelain[4:]
 endfunction
 
