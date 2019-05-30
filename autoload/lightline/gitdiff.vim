@@ -13,8 +13,10 @@ endfunction
 " If the provided callback cannot be found, the error is caught.
 "
 " [1]: https://github.com/itchyny/lightline.vim
-function! lightline#gitdiff#update(soft)
-  call lightline#gitdiff#write_calculation_to_cache(a:soft)
+function! lightline#gitdiff#update(buffers, soft)
+  for buffer in a:buffers
+    call lightline#gitdiff#write_calculation_to_cache(buffer, a:soft)
+  endfor
 
   let l:Callback = get(g:, 'lightline#gitdiff#update_callback', { -> lightline#update() })
 
@@ -29,15 +31,15 @@ endfunction
 " perform a "soft" write to reduce calls to the function that calculates
 " changes. This is to minimize overhead. Anyway, the function ensures that
 " there is data in the cache for the current buffer.
-function! lightline#gitdiff#write_calculation_to_cache(soft) abort
-  if a:soft && has_key(g:lightline#gitdiff#cache, bufnr('%'))
+function! lightline#gitdiff#write_calculation_to_cache(buffer, soft) abort
+  if a:soft && has_key(g:lightline#gitdiff#cache, a:buffer)
     " b/c there is something in the cache already
     return 
   endif
 
   let l:Calculation = get(g:, 'lightline#gitdiff#algorithm',
-        \ { -> lightline#gitdiff#algorithms#word_diff_porcelain#calculate() })
-  let g:lightline#gitdiff#cache[bufnr('%')] = l:Calculation()
+        \ { buffer -> lightline#gitdiff#algorithms#word_diff_porcelain#calculate(buffer) })
+  let g:lightline#gitdiff#cache[a:buffer] = l:Calculation(a:buffer)
 endfunction
 
 " format() {{{1 returns the calculated changes of the current buffer in a
