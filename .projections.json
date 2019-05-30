@@ -1,0 +1,5 @@
+{
+  "*": {
+    "make": "sh test/run-tests.sh"
+  }
+}

@@ -1,0 +1,16 @@
+---
+language: vim
+
+before_script: |
+  git clone https://github.com/junegunn/vader.vim.git
+  git clone https://github.com/vim/vim.git
+  cd vim
+  ./configure --with-features=huge
+  make
+  sudo make install
+  cd -
+script: |
+  /usr/local/bin/vim -Nu <(cat << VIMRC
+  set rtp+=vader.vim
+  set rtp+=.
+  VIMRC) -c 'Vader! test/lightline-gitdiff.vader' > /dev/null
