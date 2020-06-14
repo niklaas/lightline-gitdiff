@@ -115,6 +115,11 @@ provide your own. Take a look at the source of both functions for inspiration
 or consult me if you need help. I am happy to bundle additional faster and more
 feature-rich algorithms in the package.
 
+You can show empty indicators (i.e. `A: 0 D: 0 M: 0`) in the following way:
+```vim
+let g:lightline#gitdiff#show_empty_indicators = 1
+```
+
 # How it works / performance
 
 In the background, `lightline#gitdiff#get()` calls `git --numstat` or `git
