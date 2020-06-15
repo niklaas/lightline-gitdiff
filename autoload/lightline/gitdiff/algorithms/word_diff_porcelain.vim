@@ -16,22 +16,7 @@ function! lightline#gitdiff#algorithms#word_diff_porcelain#calculate(buffer) abo
   let l:lines_deleted = len(filter(copy(l:changes), { idx, val -> val ==# 'D' }))
   let l:lines_modified = len(filter(copy(l:changes), { idx, val -> val ==# 'M' }))
 
-  let l:ret = {}
-  let l:show_empty_indicators = exists('g:lightline#gitdiff#show_empty_indicators') && g:lightline#gitdiff#show_empty_indicators
-
-  if l:lines_added > 0 || l:show_empty_indicators
-    let l:ret['A'] = l:lines_added
-  endif
-
-  if l:lines_deleted > 0 || l:show_empty_indicators
-    let l:ret['D'] = l:lines_deleted
-  endif
-
-  if l:lines_modified > 0 || l:show_empty_indicators
-    let l:ret['M'] = l:lines_modified
-  endif
-
-  return l:ret
+  return { 'A': l:lines_added, 'D': l:lines_deleted, 'M': l:lines_modified}
 endfunction
 
 " get_diff_porcelain {{{1 returns the output of git's word-diff as list. The

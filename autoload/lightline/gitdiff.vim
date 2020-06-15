@@ -34,12 +34,23 @@ endfunction
 function! lightline#gitdiff#write_calculation_to_cache(buffer, soft) abort
   if a:soft && has_key(g:lightline#gitdiff#cache, a:buffer)
     " b/c there is something in the cache already
-    return 
+    return
   endif
 
-  let l:Calculation = get(g:, 'lightline#gitdiff#algorithm',
-        \ { buffer -> lightline#gitdiff#algorithms#word_diff_porcelain#calculate(buffer) })
-  let g:lightline#gitdiff#cache[a:buffer] = l:Calculation(a:buffer)
+  let l:indicator_values = get(g:, 'lightline#gitdiff#algorithm',
+      \ { buffer -> lightline#gitdiff#algorithms#word_diff_porcelain#calculate(buffer) })(a:buffer)
+
+  " If the user doesn't want to show empty indicators,
+  "     then remove the empty indicators returned from the algorithm
+  if !get(g:, 'lightline#gitdiff#show_empty_indicators', 0)
+    for key in keys(l:indicator_values)
+      if l:indicator_values[key] == 0
+        unlet l:indicator_values[key]
+      endif
+    endfor
+  endif
+
+  let g:lightline#gitdiff#cache[a:buffer] = l:indicator_values
 endfunction
 
 " format() {{{1 returns the calculated changes of the current buffer in a
