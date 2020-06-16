@@ -1,2 +1,22 @@
 Include (Algorithms): algorithm/parse_indicator_group.vader
 Include (Utils): utils/group_at.vader
+
+Execute(write_calculation_to_cache(): given no show_empty_indicators variable):
+  call g:lightline#gitdiff#write_calculation_to_cache(1, 0)
+  let actual = get(g:, 'lightline#gitdiff#cache')[1]
+Then (should return no empty indicators):
+  AssertEqual {}, actual
+
+Execute(write_calculation_to_cache(): given g:lightline#gitdiff#show_empty_indicators == 0):
+  let g:lightline#gitdiff#show_empty_indicators = 0
+  call lightline#gitdiff#write_calculation_to_cache(2, 0)
+  let actual = get(g:, 'lightline#gitdiff#cache')[2]
+Then (should return no empty indicators):
+  AssertEqual {}, actual
+
+Execute(write_calculation_to_cache(): given g:lightline#gitdiff#show_empty_indicators == 1):
+  let g:lightline#gitdiff#show_empty_indicators = 1
+  call lightline#gitdiff#write_calculation_to_cache(2, 0)
+  let actual = get(g:, 'lightline#gitdiff#cache')[2]
+Then (should return all empty indicators):
+  AssertEqual {'A': 0, 'D': 0, 'M': 0}, actual
