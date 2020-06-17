@@ -34,12 +34,23 @@ endfunction
 function! lightline#gitdiff#write_calculation_to_cache(buffer, soft) abort
   if a:soft && has_key(g:lightline#gitdiff#cache, a:buffer)
     " b/c there is something in the cache already
-    return 
+    return
   endif
 
-  let l:Calculation = get(g:, 'lightline#gitdiff#algorithm',
-        \ { buffer -> lightline#gitdiff#algorithms#word_diff_porcelain#calculate(buffer) })
-  let g:lightline#gitdiff#cache[a:buffer] = l:Calculation(a:buffer)
+  let l:indicator_values = get(g:, 'LightlineGitDiffAlgorithm',
+      \ { buffer -> lightline#gitdiff#algorithms#word_diff_porcelain#calculate(buffer) })(a:buffer)
+
+  " If the user doesn't want to show empty indicators,
+  "     then remove the empty indicators returned from the algorithm
+  if !get(g:, 'lightline#gitdiff#show_empty_indicators', 0)
+    for key in keys(l:indicator_values)
+      if l:indicator_values[key] == 0
+        unlet l:indicator_values[key]
+      endif
+    endfor
+  endif
+
+  let g:lightline#gitdiff#cache[a:buffer] = l:indicator_values
 endfunction
 
 " format() {{{1 returns the calculated changes of the current buffer in a
@@ -62,7 +73,7 @@ endfunction
 "
 " In fact, an arbitrary number of changes can be supported. This depends on
 " the algorithm that is used for calculation
-" (`g:lightline#gitdiff#algorithm`). However, this function takes only these
+" (`g:LightlineGitDiffAlgorithm`). However, this function takes only these
 " types of changes into account b/c it only provides default indicators for
 " these types. If an algorithm does not support a particular type, this is not
 " an issue; if it supports more types than this function, the additional types

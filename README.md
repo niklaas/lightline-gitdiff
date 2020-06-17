@@ -106,7 +106,7 @@ By default, the latter one is used because it allows to display modified lines.
 This resembles the default:
 
 ```vim
-let g:lightline#gitdiff#algorithm =
+let g:LightlineGitDiffAlgorithm =
       \ { buffer -> lightline#gitdiff#algorithms#word_diff_porcelain#calculate(buffer) }
 ```
 
@@ -114,6 +114,12 @@ Substitute `word_diff_porcelain` with `numstat` if you want to switch -- or
 provide your own. Take a look at the source of both functions for inspiration
 or consult me if you need help. I am happy to bundle additional faster and more
 feature-rich algorithms in the package.
+
+You can show empty indicators (i.e. `A: 0 D: 0 M: 0`) in the following way:
+
+```vim
+let g:lightline#gitdiff#show_empty_indicators = 1
+```
 
 # How it works / performance
 
