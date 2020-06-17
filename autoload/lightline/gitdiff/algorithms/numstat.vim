@@ -17,17 +17,5 @@ function! lightline#gitdiff#algorithms#numstat#calculate(buffer) abort
     return {}
   endif
 
-  let l:ret = {}
-
-  " lines added
-  if l:stats[0] !=# '0'
-    let l:ret['A'] = l:stats[0]
-  endif
-
-  " lines deleted
-  if l:stats[1] !=# '0'
-    let l:ret['D'] = l:stats[1]
-  endif
-
-  return l:ret
+  return { 'A': l:stats[0], 'D': l:stats[1] }
 endfunction

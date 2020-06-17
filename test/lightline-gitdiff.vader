@@ -1,22 +1,194 @@
 Include (Algorithms): algorithm/parse_indicator_group.vader
 Include (Utils): utils/group_at.vader
 
-Execute(write_calculation_to_cache(): given no show_empty_indicators variable):
+Before :
+  if exists('g:LightlineGitDiffAlgorithm')
+    unlet g:LightlineGitDiffAlgorithm
+  endif
+
+" no show_empty_indicators variable
+Execute(write_calculation_to_cache(): given no show_empty_indicators variable and an empty result):
+  let g:LightlineGitDiffAlgorithm = { -> { 'A': 0, 'D': 0, 'M':0 } }
   call g:lightline#gitdiff#write_calculation_to_cache(1, 0)
   let actual = get(g:, 'lightline#gitdiff#cache')[1]
 Then (should return no empty indicators):
   AssertEqual {}, actual
 
-Execute(write_calculation_to_cache(): given g:lightline#gitdiff#show_empty_indicators == 0):
+Execute(write_calculation_to_cache(): given no show_empty_indicators variable with only added lines):
+  let g:LightlineGitDiffAlgorithm = { -> { 'A': 1, 'D': 0, 'M': 0 } }
+  call g:lightline#gitdiff#write_calculation_to_cache(1, 0)
+  let actual = get(g:, 'lightline#gitdiff#cache')[1]
+Then (should remove all indicators but 'A'):
+  AssertEqual { 'A': 1 }, actual
+
+Execute(write_calculation_to_cache(): given no show_empty_indicators variable with only deleted lines):
+  let g:LightlineGitDiffAlgorithm = { -> { 'A': 0, 'D': 1, 'M': 0 } }
+  call g:lightline#gitdiff#write_calculation_to_cache(1, 0)
+  let actual = get(g:, 'lightline#gitdiff#cache')[1]
+Then (should remove all indicators but 'D'):
+  AssertEqual { 'D': 1 }, actual
+
+Execute(write_calculation_to_cache(): given no show_empty_indicators variable with only modified lines):
+  let g:LightlineGitDiffAlgorithm = { -> { 'A': 0, 'D': 0, 'M': 1 } }
+  call g:lightline#gitdiff#write_calculation_to_cache(1, 0)
+  let actual = get(g:, 'lightline#gitdiff#cache')[1]
+Then (should remove all indicators but 'M'):
+  AssertEqual { 'M': 1 }, actual
+
+Execute(write_calculation_to_cache(): given no show_empty_indicators variable with added and modified lines):
+  let g:LightlineGitDiffAlgorithm = { -> { 'A': 3, 'D': 0, 'M': 1 } }
+  call g:lightline#gitdiff#write_calculation_to_cache(1, 0)
+  let actual = get(g:, 'lightline#gitdiff#cache')[1]
+Then (should remove only the 'D' indicator):
+  AssertEqual { 'A': 3, 'M': 1 }, actual
+
+Execute(write_calculation_to_cache(): given no show_empty_indicators variable with deleted and modified lines):
+  let g:LightlineGitDiffAlgorithm = { -> { 'A': 0, 'D': 2, 'M': 1 } }
+  call g:lightline#gitdiff#write_calculation_to_cache(1, 0)
+  let actual = get(g:, 'lightline#gitdiff#cache')[1]
+Then (should remove only the 'A' indicator):
+  AssertEqual { 'D': 2, 'M': 1 }, actual
+
+Execute(write_calculation_to_cache(): given no show_empty_indicators variable with added and deleted lines):
+  let g:LightlineGitDiffAlgorithm = { -> { 'A': 4, 'D': 5, 'M': 0 } }
+  call g:lightline#gitdiff#write_calculation_to_cache(1, 0)
+  let actual = get(g:, 'lightline#gitdiff#cache')[1]
+Then (should remove only the 'M' indicator):
+  AssertEqual { 'A': 4, 'D': 5 }, actual
+
+Execute(write_calculation_to_cache(): given no show_empty_indicators variable with added, deleted, and modified lines):
+  let g:LightlineGitDiffAlgorithm = { -> { 'A': 9, 'D': 10, 'M': 7 } }
+  call g:lightline#gitdiff#write_calculation_to_cache(1, 0)
+  let actual = get(g:, 'lightline#gitdiff#cache')[1]
+Then (should not remove any indicators):
+  AssertEqual { 'A': 9, 'D': 10, 'M': 7 }, actual
+
+" show_empty_indicators variable == 0
+Execute(write_calculation_to_cache(): given the show_empty_indicators variable equals 0 with an empty result):
+  let g:LightlineGitDiffAlgorithm = { -> { 'A': 0, 'D': 0, 'M':0 } }
   let g:lightline#gitdiff#show_empty_indicators = 0
-  call lightline#gitdiff#write_calculation_to_cache(2, 0)
-  let actual = get(g:, 'lightline#gitdiff#cache')[2]
+  call g:lightline#gitdiff#write_calculation_to_cache(1, 0)
+  let actual = get(g:, 'lightline#gitdiff#cache')[1]
 Then (should return no empty indicators):
   AssertEqual {}, actual
 
-Execute(write_calculation_to_cache(): given g:lightline#gitdiff#show_empty_indicators == 1):
+Execute(write_calculation_to_cache(): given the show_empty_indicators variable equals 0 with only added lines):
+  let g:LightlineGitDiffAlgorithm = { -> { 'A': 1, 'D': 0, 'M': 0 } }
+  let g:lightline#gitdiff#show_empty_indicators = 0
+  call g:lightline#gitdiff#write_calculation_to_cache(1, 0)
+  let actual = get(g:, 'lightline#gitdiff#cache')[1]
+Then (should remove all indicators but 'A'):
+  AssertEqual { 'A': 1 }, actual
+
+Execute(write_calculation_to_cache(): given the show_empty_indicators variable equals 0 with only deleted lines):
+  let g:LightlineGitDiffAlgorithm = { -> { 'A': 0, 'D': 1, 'M': 0 } }
+  let g:lightline#gitdiff#show_empty_indicators = 0
+  call g:lightline#gitdiff#write_calculation_to_cache(1, 0)
+  let actual = get(g:, 'lightline#gitdiff#cache')[1]
+Then (should remove all indicators but 'D'):
+  AssertEqual { 'D': 1 }, actual
+
+Execute(write_calculation_to_cache(): given the show_empty_indicators variable equals 0 with only modified lines):
+  let g:LightlineGitDiffAlgorithm = { -> { 'A': 0, 'D': 0, 'M': 1 } }
+  let g:lightline#gitdiff#show_empty_indicators = 0
+  call g:lightline#gitdiff#write_calculation_to_cache(1, 0)
+  let actual = get(g:, 'lightline#gitdiff#cache')[1]
+Then (should remove all indicators but 'M'):
+  AssertEqual { 'M': 1 }, actual
+
+Execute(write_calculation_to_cache(): given the show_empty_indicators variable equals 0 with added and modified lines):
+  let g:LightlineGitDiffAlgorithm = { -> { 'A': 3, 'D': 0, 'M': 1 } }
+  let g:lightline#gitdiff#show_empty_indicators = 0
+  call g:lightline#gitdiff#write_calculation_to_cache(1, 0)
+  let actual = get(g:, 'lightline#gitdiff#cache')[1]
+Then (should remove only the 'D' indicator):
+  AssertEqual { 'A': 3, 'M': 1 }, actual
+
+Execute(write_calculation_to_cache(): given the show_empty_indicators variable equals 0 with deleted and modified lines):
+  let g:LightlineGitDiffAlgorithm = { -> { 'A': 0, 'D': 2, 'M': 1 } }
+  let g:lightline#gitdiff#show_empty_indicators = 0
+  call g:lightline#gitdiff#write_calculation_to_cache(1, 0)
+  let actual = get(g:, 'lightline#gitdiff#cache')[1]
+Then (should remove only the 'A' indicator):
+  AssertEqual { 'D': 2, 'M': 1 }, actual
+
+Execute(write_calculation_to_cache(): given the show_empty_indicators variable equals 0 with added and deleted lines):
+  let g:LightlineGitDiffAlgorithm = { -> { 'A': 4, 'D': 5, 'M': 0 } }
+  let g:lightline#gitdiff#show_empty_indicators = 0
+  call g:lightline#gitdiff#write_calculation_to_cache(1, 0)
+  let actual = get(g:, 'lightline#gitdiff#cache')[1]
+Then (should remove only the 'M' indicator):
+  AssertEqual { 'A': 4, 'D': 5 }, actual
+
+Execute(write_calculation_to_cache(): given the show_empty_indicators variable equals 0 with added, deleted, and modified lines):
+  let g:LightlineGitDiffAlgorithm = { -> { 'A': 9, 'D': 10, 'M': 7 } }
+  let g:lightline#gitdiff#show_empty_indicators = 0
+  call g:lightline#gitdiff#write_calculation_to_cache(1, 0)
+  let actual = get(g:, 'lightline#gitdiff#cache')[1]
+Then (should not remove any indicators):
+  AssertEqual { 'A': 9, 'D': 10, 'M': 7 }, actual
+
+" show_empty_indicators variable == 1
+Execute(write_calculation_to_cache(): given the show_empty_indicators variable equals 1 with an empty result):
+  let g:LightlineGitDiffAlgorithm = { -> { 'A': 0, 'D': 0, 'M':0 } }
   let g:lightline#gitdiff#show_empty_indicators = 1
-  call lightline#gitdiff#write_calculation_to_cache(2, 0)
-  let actual = get(g:, 'lightline#gitdiff#cache')[2]
-Then (should return all empty indicators):
-  AssertEqual {'A': 0, 'D': 0, 'M': 0}, actual
+  call g:lightline#gitdiff#write_calculation_to_cache(1, 0)
+  let actual = get(g:, 'lightline#gitdiff#cache')[1]
+Then (should return all indicators):
+  AssertEqual { 'A': 0, 'D': 0, 'M':0 }, actual
+
+Execute(write_calculation_to_cache(): given the show_empty_indicators variable equals 1 with only added lines):
+  let g:LightlineGitDiffAlgorithm = { -> { 'A': 1, 'D': 0, 'M': 0 } }
+  let g:lightline#gitdiff#show_empty_indicators = 1
+  call g:lightline#gitdiff#write_calculation_to_cache(1, 0)
+  let actual = get(g:, 'lightline#gitdiff#cache')[1]
+Then (should remove all indicators):
+  AssertEqual { 'A': 1, 'D': 0, 'M': 0 }, actual
+
+Execute(write_calculation_to_cache(): given the show_empty_indicators variable equals 1 with only deleted lines):
+  let g:LightlineGitDiffAlgorithm = { -> { 'A': 0, 'D': 1, 'M': 0 } }
+  let g:lightline#gitdiff#show_empty_indicators = 1
+  call g:lightline#gitdiff#write_calculation_to_cache(1, 0)
+  let actual = get(g:, 'lightline#gitdiff#cache')[1]
+Then (should return all indicators):
+  AssertEqual { 'A': 0, 'D': 1, 'M': 0 }, actual
+
+Execute(write_calculation_to_cache(): given the show_empty_indicators variable equals 1 with only modified lines):
+  let g:LightlineGitDiffAlgorithm = { -> { 'A': 0, 'D': 0, 'M': 1 } }
+  let g:lightline#gitdiff#show_empty_indicators = 1
+  call g:lightline#gitdiff#write_calculation_to_cache(1, 0)
+  let actual = get(g:, 'lightline#gitdiff#cache')[1]
+Then (should return all indicators):
+  AssertEqual { 'A': 0, 'D': 0, 'M': 1 }, actual
+
+Execute(write_calculation_to_cache(): given the show_empty_indicators variable equals 1 with added and modified lines):
+  let g:LightlineGitDiffAlgorithm = { -> { 'A': 3, 'D': 0, 'M': 1 } }
+  let g:lightline#gitdiff#show_empty_indicators = 1
+  call g:lightline#gitdiff#write_calculation_to_cache(1, 0)
+  let actual = get(g:, 'lightline#gitdiff#cache')[1]
+Then (should return all indicators):
+  AssertEqual { 'A': 3, 'D': 0, 'M': 1 }, actual
+
+Execute(write_calculation_to_cache(): given the show_empty_indicators variable equals 1 with deleted and modified lines):
+  let g:LightlineGitDiffAlgorithm = { -> { 'A': 0, 'D': 2, 'M': 1 } }
+  let g:lightline#gitdiff#show_empty_indicators = 1
+  call g:lightline#gitdiff#write_calculation_to_cache(1, 0)
+  let actual = get(g:, 'lightline#gitdiff#cache')[1]
+Then (should return all indicators):
+  AssertEqual { 'A': 0, 'D': 2, 'M': 1 }, actual
+
+Execute(write_calculation_to_cache(): given the show_empty_indicators variable equals 1 with added and deleted lines):
+  let g:LightlineGitDiffAlgorithm = { -> { 'A': 4, 'D': 5, 'M': 0 } }
+  let g:lightline#gitdiff#show_empty_indicators = 1
+  call g:lightline#gitdiff#write_calculation_to_cache(1, 0)
+  let actual = get(g:, 'lightline#gitdiff#cache')[1]
+Then (should return all indicators):
+  AssertEqual { 'A': 4, 'D': 5, 'M': 0 }, actual
+
+Execute(write_calculation_to_cache(): given the show_empty_indicators variable equals 1 with added, deleted, and modified lines):
+  let g:LightlineGitDiffAlgorithm = { -> { 'A': 9, 'D': 10, 'M': 7 } }
+  let g:lightline#gitdiff#show_empty_indicators = 1
+  call g:lightline#gitdiff#write_calculation_to_cache(1, 0)
+  let actual = get(g:, 'lightline#gitdiff#cache')[1]
+Then (should return all indicators):
+  AssertEqual { 'A': 9, 'D': 10, 'M': 7 }, actual
