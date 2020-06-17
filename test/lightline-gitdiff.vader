@@ -6,7 +6,7 @@ Before :
     unlet g:LightlineGitDiffAlgorithm
   endif
 
-" no show_empty_indicators
+" no show_empty_indicators variable
 Execute(write_calculation_to_cache(): given no show_empty_indicators variable and an empty result):
   let g:LightlineGitDiffAlgorithm = { -> { 'A': 0, 'D': 0, 'M':0 } }
   call g:lightline#gitdiff#write_calculation_to_cache(1, 0)
