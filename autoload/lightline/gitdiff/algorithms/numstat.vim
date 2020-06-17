@@ -17,5 +17,5 @@ function! lightline#gitdiff#algorithms#numstat#calculate(buffer) abort
     return {}
   endif
 
-  return return { 'A': l:stats[0], 'D': l:stats[1] }
+  return { 'A': l:stats[0], 'D': l:stats[1] }
 endfunction
