@@ -106,7 +106,7 @@ By default, the latter one is used because it allows to display modified lines.
 This resembles the default:
 
 ```vim
-let g:lightline#gitdiff#algorithm =
+let g:LightlineGitDiffAlgorithm =
       \ { buffer -> lightline#gitdiff#algorithms#word_diff_porcelain#calculate(buffer) }
 ```
 
